@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+cd ../
+
+while read -r host || [[ -n "$host" ]]; do
+  if [[ $host =~ '^[[:space:]]*#.*' ]]; then
+    continue
+  fi
+
+  # TODO: You can probably persist one connection per host here and do all the keys at once.
+  # This is good enough for now.
+  while read -r key || [[ -n "$key" ]]; do
+    ssh -o 'BatchMode yes' -i "$(pwd)/management-key" "$host" \
+      "grep -qxF '$key' ~/.ssh/authorized_keys || echo $key >> ~/.ssh/authorized_keys"
+  done < keys
+
+  echo "[+] $host"
+done < hosts
